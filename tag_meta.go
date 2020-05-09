@@ -1,6 +1,7 @@
 package opengraph
 
 import (
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -33,6 +34,17 @@ func MetaTag(n *html.Node) *Meta {
 // Contribute ...
 func (m *Meta) Contribute(og *OpenGraph) error {
 	switch {
+	case m.IsURL():
+		if og.URL.Source == "" {
+			u, err := url.Parse(m.Content)
+			if err != nil {
+				return err
+			}
+			og.URL = URL{
+				Source: m.Content,
+				URL:    u,
+			}
+		}
 	case m.IsTitle():
 		og.Title = m.Content
 	case m.IsOGDescription():
@@ -92,4 +104,9 @@ func (m *Meta) IsType() bool {
 // IsSiteName returns if it can be "og:site_name"
 func (m *Meta) IsSiteName() bool {
 	return m.Property == "og:site_name"
+}
+
+// IsURL returns if it can be "og:url"
+func (m *Meta) IsURL() bool {
+	return m.Property == "og:url"
 }
